@@ -32,14 +32,16 @@ const OAuthCallback = () => {
             navigate('/candidate/dashboard')
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error('OAuth login failed:', err)
           navigate('/login')
         })
     } else {
       // No token found, redirect to login
       navigate('/login')
     }
-  }, [navigate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center">
