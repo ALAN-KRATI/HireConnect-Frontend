@@ -6,17 +6,24 @@ import { useAuth } from '../context/AuthContext'
 const JobDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated, isCandidate } = useAuth()
+  const { isAuthenticated, isCandidate, user } = useAuth()
   const [job, setJob] = useState(null)
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showApplyModal, setShowApplyModal] = useState(false)
   const [coverLetter, setCoverLetter] = useState('')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showErrorToast, setShowErrorToast] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [hasApplied, setHasApplied] = useState(false)
 
   useEffect(() => {
     fetchJobDetails()
-  }, [id])
+    if (isAuthenticated && isCandidate) {
+      checkIfApplied()
+    }
+  }, [id, isAuthenticated, isCandidate])
 
   const fetchJobDetails = async () => {
     try {
@@ -30,7 +37,18 @@ const JobDetails = () => {
     }
   }
 
-  const handleApply = async () => {
+  const checkIfApplied = async () => {
+    try {
+      const response = await applicationService.getMyApplications()
+      const applications = response.data || []
+      const applied = applications.some(app => app.jobId === parseInt(id))
+      setHasApplied(applied)
+    } catch (error) {
+      console.error('Error checking application status:', error)
+    }
+  }
+
+  const handleApply = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: `/jobs/${id}` } })
       return
@@ -47,12 +65,21 @@ const JobDetails = () => {
   const submitApplication = async () => {
     try {
       setApplying(true)
-      await applicationService.applyForJob(id, coverLetter)
-      alert('Application submitted successfully!')
+      const applicationData = {
+        jobId: parseInt(id),
+        recruiterId: job.postedBy,
+        coverLetter: coverLetter
+      }
+      console.log('Submitting application:', applicationData)
+      await applicationService.submitApplication(applicationData)
       setShowApplyModal(false)
+      setCoverLetter('')
+      setShowSuccessModal(true)
     } catch (error) {
       console.error('Error applying:', error)
-      alert(error.response?.data?.message || 'Failed to submit application')
+      setErrorMessage(error.response?.data?.message || 'Failed to submit application')
+      setShowErrorToast(true)
+      setTimeout(() => setShowErrorToast(false), 5000)
     } finally {
       setApplying(false)
     }
@@ -145,12 +172,24 @@ const JobDetails = () => {
                     </svg>
                     {saved ? 'Saved' : 'Save Job'}
                   </button>
-                  <button
-                    onClick={handleApply}
-                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Apply Now
-                  </button>
+                  {hasApplied ? (
+                    <Link
+                      to="/candidate/applications"
+                      className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Applied
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={handleApply}
+                      className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Apply Now
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -296,34 +335,202 @@ const JobDetails = () => {
 
       {/* Apply Modal */}
       {showApplyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Apply for {job.title}</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Cover Letter (Optional)</label>
-              <textarea
-                value={coverLetter}
-                onChange={(e) => setCoverLetter(e.target.value)}
-                rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Tell us why you're a great fit for this role..."
-              />
+        <div 
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 99999
+          }}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-2xl w-full overflow-y-auto"
+            style={{ maxWidth: '600px', maxHeight: '90vh' }}
+          >
+            {/* Header */}
+            <div className="border-b border-gray-200 p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold text-2xl">
+                  {job.title.charAt(0)}
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-gray-900">Apply for {job.title}</h2>
+                  <p className="text-gray-600">{job.companyName || 'Company Name'}</p>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <span>{job.location}</span>
+                    <span>•</span>
+                    <span>{job.type}</span>
+                    <span>•</span>
+                    <span>{formatSalary(job.minSalary, job.maxSalary)}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowApplyModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div className="flex gap-3">
+
+            {/* Form Content */}
+            <div className="p-6 space-y-6">
+              {/* Personal Information */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Personal Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500">Name</p>
+                    <p className="font-medium text-gray-900">{user?.email?.split('@')[0] || 'Applicant'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Email</p>
+                    <p className="font-medium text-gray-900">{user?.email || 'Not available'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cover Letter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Cover Letter <span className="text-gray-500 font-normal">(Optional)</span>
+                </label>
+                <textarea
+                  value={coverLetter}
+                  onChange={(e) => setCoverLetter(e.target.value)}
+                  rows={6}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                  placeholder="Tell the employer why you're interested in this position and what makes you a great fit. Highlight your relevant experience and skills..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Pro tip: Mention specific achievements or projects that demonstrate your expertise in {job.skills?.slice(0, 3).join(', ') || 'the required skills'}.
+                </p>
+              </div>
+
+              {/* Resume Info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900">Resume</p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Your profile resume will be attached to this application. Make sure it's up to date in your profile.
+                    </p>
+                    <Link 
+                      to="/profile" 
+                      className="text-sm text-blue-600 hover:text-blue-800 mt-2 inline-block"
+                      onClick={() => setShowApplyModal(false)}
+                    >
+                      Update Resume →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms */}
+              <div className="flex items-start gap-2 text-sm text-gray-600">
+                <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p>
+                  By submitting this application, you agree to share your profile information with the employer. 
+                  You can withdraw your application anytime from your dashboard.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-gray-200 p-6 flex gap-3">
               <button
                 onClick={() => setShowApplyModal(false)}
-                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={submitApplication}
                 disabled={applying}
-                className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
               >
-                {applying ? 'Submitting...' : 'Submit Application'}
+                {applying ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </>
+                ) : (
+                  <>Submit Application</>
+                )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h2>
+            <p className="text-gray-600 mb-6">
+              Your application for <span className="font-semibold">{job?.title}</span> has been sent to the employer. 
+              You can track its status in your dashboard.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false)
+                  navigate('/candidate/applications')
+                }}
+                className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+              >
+                View My Applications
+              </button>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
+                Continue Browsing Jobs
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Toast */}
+      {showErrorToast && (
+        <div className="fixed bottom-6 right-6 z-[9999]">
+          <div className="bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-in-right">
+            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-semibold">Application Failed</p>
+              <p className="text-sm opacity-90">{errorMessage}</p>
+            </div>
+            <button 
+              onClick={() => setShowErrorToast(false)}
+              className="ml-4 text-white opacity-70 hover:opacity-100"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       )}

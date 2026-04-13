@@ -144,11 +144,14 @@ const Navbar = () => {
                     </Link>
                     {isCandidate && (
                       <>
-                        <Link to="/candidate/dashboard" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                        <Link to="/candidate/applications" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
                           My Applications
                         </Link>
                         <Link to="/candidate/interviews" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
                           My Interviews
+                        </Link>
+                        <Link to="/candidate/dashboard" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                          Dashboard
                         </Link>
                       </>
                     )}

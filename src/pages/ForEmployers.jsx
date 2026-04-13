@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const ForEmployers = () => {
+  const { isAuthenticated, isRecruiter } = useAuth()
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -14,18 +16,44 @@ const ForEmployers = () => {
               Post jobs, manage applications, and hire the best candidates with HireConnect
             </p>
             <div className="flex justify-center gap-4">
-              <Link
-                to="/register"
-                className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                Get Started Free
-              </Link>
-              <Link
-                to="/login"
-                className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
-              >
-                Sign In
-              </Link>
+              {!isAuthenticated ? (
+                <>
+                  <Link
+                    to="/register"
+                    className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Get Started Free
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </>
+              ) : isRecruiter ? (
+                <Link
+                  to="/recruiter/dashboard"
+                  className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Register as Recruiter
+                  </Link>
+                  <Link
+                    to="/candidate/dashboard"
+                    className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
+                  >
+                    Back to Candidate Dashboard
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

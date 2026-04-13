@@ -12,6 +12,7 @@ import RecruiterDashboard from './pages/recruiter/RecruiterDashboard'
 import JobSearch from './pages/JobSearch'
 import JobDetails from './pages/JobDetails'
 import MyApplications from './pages/candidate/MyApplications'
+import ApplicationDetails from './pages/candidate/ApplicationDetails'
 import SavedJobs from './pages/candidate/SavedJobs'
 import MyInterviews from './pages/candidate/MyInterviews'
 import ManageJobs from './pages/recruiter/ManageJobs'
@@ -46,6 +47,11 @@ function App() {
             <Route path="/candidate/applications" element={
               <ProtectedRoute allowedRoles={['CANDIDATE']}>
                 <MyApplications />
+              </ProtectedRoute>
+            } />
+            <Route path="/candidate/applications/:id" element={
+              <ProtectedRoute allowedRoles={['CANDIDATE']}>
+                <ApplicationDetails />
               </ProtectedRoute>
             } />
             <Route path="/candidate/saved" element={

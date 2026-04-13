@@ -173,16 +173,24 @@ const LandingPage = () => {
               <h4 className="font-semibold mb-4 text-white">For Candidates</h4>
               <ul className="space-y-3 text-gray-400">
                 <li><Link to="/jobs" className="hover:text-blue-400 transition-colors">Find Jobs</Link></li>
-                <li><Link to="/register" className="hover:text-blue-400 transition-colors">Create Profile</Link></li>
-                <li><Link to="/" className="hover:text-blue-400 transition-colors">Career Resources</Link></li>
+                {!isAuthenticated && (
+                  <li><Link to="/register" className="hover:text-blue-400 transition-colors">Create Profile</Link></li>
+                )}
+                {isAuthenticated && isCandidate && (
+                  <li><Link to="/candidate/dashboard" className="hover:text-blue-400 transition-colors">My Dashboard</Link></li>
+                )}
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4 text-white">For Recruiters</h4>
               <ul className="space-y-3 text-gray-400">
-                <li><Link to="/" className="hover:text-blue-400 transition-colors">Post a Job</Link></li>
-                <li><Link to="/" className="hover:text-blue-400 transition-colors">Find Candidates</Link></li>
-                <li><Link to="/" className="hover:text-blue-400 transition-colors">Pricing Plans</Link></li>
+                <li><Link to="/employers" className="hover:text-blue-400 transition-colors">Post a Job</Link></li>
+                {!isAuthenticated && (
+                  <li><Link to="/register" className="hover:text-blue-400 transition-colors">Get Started</Link></li>
+                )}
+                {isAuthenticated && isRecruiter && (
+                  <li><Link to="/recruiter/dashboard" className="hover:text-blue-400 transition-colors">My Dashboard</Link></li>
+                )}
               </ul>
             </div>
             <div>

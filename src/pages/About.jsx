@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const About = () => {
+  const { isAuthenticated, isCandidate } = useAuth()
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -126,12 +128,21 @@ const About = () => {
             >
               Email Us
             </a>
-            <Link
-              to="/register"
-              className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
-            >
-              Join HireConnect
-            </Link>
+            {!isAuthenticated ? (
+              <Link
+                to="/register"
+                className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
+              >
+                Join HireConnect
+              </Link>
+            ) : (
+              <Link
+                to={isCandidate ? '/candidate/dashboard' : '/recruiter/dashboard'}
+                className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
+              >
+                Go to Dashboard
+              </Link>
+            )}
           </div>
         </div>
       </section>
