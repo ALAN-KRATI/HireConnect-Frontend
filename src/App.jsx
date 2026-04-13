@@ -4,12 +4,14 @@ import Navbar from './components/Navbar'
 import LandingPage from './pages/LandingPage'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import OAuthCallback from './pages/OAuthCallback'
 import CandidateDashboard from './pages/candidate/CandidateDashboard'
 import RecruiterDashboard from './pages/recruiter/RecruiterDashboard'
 import JobSearch from './pages/JobSearch'
 import JobDetails from './pages/JobDetails'
 import MyApplications from './pages/candidate/MyApplications'
 import SavedJobs from './pages/candidate/SavedJobs'
+import MyInterviews from './pages/candidate/MyInterviews'
 import ManageJobs from './pages/recruiter/ManageJobs'
 import ManageApplications from './pages/recruiter/ManageApplications'
 import CreateJob from './pages/recruiter/CreateJob'
@@ -27,6 +29,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<OAuthCallback />} />
             <Route path="/jobs" element={<JobSearch />} />
             <Route path="/jobs/:id" element={<JobDetails />} />
 
@@ -44,6 +47,11 @@ function App() {
             <Route path="/candidate/saved" element={
               <ProtectedRoute allowedRoles={['CANDIDATE']}>
                 <SavedJobs />
+              </ProtectedRoute>
+            } />
+            <Route path="/candidate/interviews" element={
+              <ProtectedRoute allowedRoles={['CANDIDATE']}>
+                <MyInterviews />
               </ProtectedRoute>
             } />
 

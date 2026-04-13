@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { authService } from '../services/api'
 
 const AuthContext = createContext()
@@ -57,10 +57,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  const loginWithOAuth = useCallback(async (email, token, role, userId) => {
+    localStorage.setItem('token', token)
+    setUser({ token, email, role, userId })
+    return { role }
+  }, [])
+
   const value = {
     user,
     loading,
     login,
+    loginWithOAuth,
     register,
     logout,
     isAuthenticated: !!user,
