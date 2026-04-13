@@ -16,26 +16,39 @@ const JobSearch = () => {
   })
 
   useEffect(() => {
+    console.log('JobSearch component mounted')
+    console.log('Current searchParams:', searchParams.toString())
     fetchJobs()
-  }, [searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const fetchJobs = async () => {
     try {
       setLoading(true)
-      const query = searchParams.get('search')
-      let response
-
-      if (query) {
-        response = await jobService.searchJobs({ title: query })
+      console.log('=== FETCHING JOBS ===')
+      console.log('API URL:', import.meta.env.VITE_API_URL || 'http://localhost:8080')
+      
+      const response = await jobService.getAllJobs()
+      console.log('Response:', response)
+      console.log('Response data:', response.data)
+      console.log('Is array:', Array.isArray(response.data))
+      
+      if (Array.isArray(response.data)) {
+        console.log('Setting jobs:', response.data.length)
+        setJobs(response.data)
       } else {
-        response = await jobService.getAllJobs()
+        console.error('Expected array but got:', typeof response.data)
+        setJobs([])
       }
-
-      setJobs(response.data)
     } catch (error) {
-      console.error('Error fetching jobs:', error)
+      console.error('=== ERROR FETCHING JOBS ===')
+      console.error('Error:', error)
+      console.error('Error message:', error.message)
+      console.error('Error response:', error.response?.status, error.response?.data)
+      setJobs([])
     } finally {
       setLoading(false)
+      console.log('=== DONE FETCHING ===')
     }
   }
 
@@ -279,13 +292,19 @@ const JobSearch = () => {
                   </div>
                 ))}
 
-                {jobs.length === 0 && (
+                {jobs.length === 0 && !loading && (
                   <div className="text-center py-12">
                     <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <h3 className="text-lg font-medium text-gray-900">No jobs found</h3>
                     <p className="text-gray-500">Try adjusting your search or filters</p>
+                    <button 
+                      onClick={fetchJobs}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Retry Loading Jobs
+                    </button>
                   </div>
                 )}
               </div>

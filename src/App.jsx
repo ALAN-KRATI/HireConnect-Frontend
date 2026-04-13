@@ -5,6 +5,8 @@ import LandingPage from './pages/LandingPage'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import OAuthCallback from './pages/OAuthCallback'
+import ForEmployers from './pages/ForEmployers'
+import About from './pages/About'
 import CandidateDashboard from './pages/candidate/CandidateDashboard'
 import RecruiterDashboard from './pages/recruiter/RecruiterDashboard'
 import JobSearch from './pages/JobSearch'
@@ -30,6 +32,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
+            <Route path="/employers" element={<ForEmployers />} />
+            <Route path="/about" element={<About />} />
             <Route path="/jobs" element={<JobSearch />} />
             <Route path="/jobs/:id" element={<JobDetails />} />
 

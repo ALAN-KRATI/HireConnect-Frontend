@@ -189,9 +189,9 @@ const ManageApplications = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Jobs</option>
-              {jobs.map(job => (
-                <option key={job.id} value={job.id}>{job.title}</option>
-              ))}
+                {jobs.map(job => (
+                  <option key={job.jobId} value={job.jobId}>{job.title}</option>
+                ))}
             </select>
 
             <select

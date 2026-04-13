@@ -23,13 +23,13 @@ const OAuthCallback = () => {
       }
 
       // Update auth context
-      login(email, token, role, userId)
+      loginWithOAuth(email, token, role, userId)
         .then(() => {
           // Redirect based on role
           if (role === 'RECRUITER') {
-            navigate('/recruiter-dashboard')
+            navigate('/recruiter/dashboard')
           } else {
-            navigate('/candidate-dashboard')
+            navigate('/candidate/dashboard')
           }
         })
         .catch(() => {
