@@ -18,6 +18,11 @@ import MyInterviews from './pages/candidate/MyInterviews'
 import ManageJobs from './pages/recruiter/ManageJobs'
 import ManageApplications from './pages/recruiter/ManageApplications'
 import CreateJob from './pages/recruiter/CreateJob'
+import PaymentPage from './pages/recruiter/PaymentPage'
+import PaymentSuccess from './pages/recruiter/PaymentSuccess'
+import PaymentCancel from './pages/recruiter/PaymentCancel'
+import InvoicesPage from './pages/recruiter/InvoicesPage'
+import AnalyticsDashboard from './pages/recruiter/AnalyticsDashboard'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -87,6 +92,23 @@ function App() {
                 <ManageApplications />
               </ProtectedRoute>
             } />
+            <Route path="/recruiter/upgrade" element={
+              <ProtectedRoute allowedRoles={['RECRUITER']}>
+                <PaymentPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/recruiter/invoices" element={
+              <ProtectedRoute allowedRoles={['RECRUITER']}>
+                <InvoicesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/recruiter/analytics" element={
+              <ProtectedRoute allowedRoles={['RECRUITER']}>
+                <AnalyticsDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel" element={<PaymentCancel />} />
 
             {/* Shared Routes */}
             <Route path="/profile" element={

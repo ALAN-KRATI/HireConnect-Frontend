@@ -186,6 +186,28 @@ const RecruiterDashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Subscription Status */}
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-md p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold mb-1">Current Plan</h3>
+                  <p className="text-3xl font-bold">PROFESSIONAL</p>
+                  <p className="text-sm opacity-90 mt-2">18 days remaining</p>
+                </div>
+                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <Link
+                to="/recruiter/upgrade"
+                className="mt-4 inline-block px-4 py-2 bg-white text-blue-600 rounded-lg font-medium text-sm hover:bg-gray-100 transition-colors"
+              >
+                Upgrade Plan
+              </Link>
+            </div>
+
             {/* Active Job Postings */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex justify-between items-center mb-4">
