@@ -4,14 +4,14 @@
  * Base URL: http://localhost:8080 (API Gateway)
  */
 
-// API Base Configuration
+// SIMPLE: Talk directly to backend
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
-  TIMEOUT: 30000,
+  BASE_URL: 'http://localhost:8080',
+  TIMEOUT: 10000,
   VERSION: 'v1'
 }
 
-// Service Endpoints
+// SIMPLE: Direct endpoints (backend routes)
 export const ENDPOINTS = {
   // Auth Service
   AUTH: {
@@ -25,19 +25,14 @@ export const ENDPOINTS = {
 
   // Profile Service
   PROFILES: {
-    // Candidate profiles
     GET_CANDIDATE: (userId) => `/profiles/candidates/${userId}`,
     UPDATE_CANDIDATE: (userId) => `/profiles/candidates/${userId}`,
     DELETE_CANDIDATE: (userId) => `/profiles/candidates/${userId}`,
     GET_ALL_CANDIDATES: '/profiles/candidates',
-
-    // Recruiter profiles
     GET_RECRUITER: (userId) => `/profiles/recruiters/${userId}`,
     UPDATE_RECRUITER: (userId) => `/profiles/recruiters/${userId}`,
     DELETE_RECRUITER: (userId) => `/profiles/recruiters/${userId}`,
     GET_ALL_RECRUITERS: '/profiles/recruiters',
-
-    // Legacy endpoints (for compatibility)
     ME: '/profiles/me',
     RESUME: '/profiles/resume',
     SAVED_JOBS: '/profiles/saved-jobs',
@@ -71,31 +66,17 @@ export const ENDPOINTS = {
     REJECT: (id) => `/applications/${id}/reject`,
     ADVANCE: (id) => `/applications/${id}/advance`,
     COUNT_BY_JOB: (jobId) => `/applications/job/${jobId}/count`,
-
-    // Legacy/recruiter endpoints
-    GET_RECRUITER_APPLICATIONS: '/applications/recruiter'
+    GET_RECRUITER_APPLICATIONS: '/applications/recruiter/me'
   },
 
   // Interview Service
   INTERVIEWS: {
     SCHEDULE: '/interviews',
-    GET_BY_ID: (id) => `/interviews/${id}`,
-    CONFIRM: (id) => `/interviews/${id}/confirm`,
-    RESCHEDULE: (id) => `/interviews/${id}/reschedule`,
-    CANCEL: (id) => `/interviews/${id}/cancel`,
+    GET_BY_APPLICATION: (applicationId) => `/interviews/application/${applicationId}`,
     GET_BY_CANDIDATE: (candidateId) => `/interviews/candidate/${candidateId}`,
     GET_BY_RECRUITER: (recruiterId) => `/interviews/recruiter/${recruiterId}`,
-    GET_BY_APPLICATION: (applicationId) => `/interviews/application/${applicationId}`,
-
-    // Legacy endpoints
-    MY_INTERVIEWS: '/interviews/my-interviews'
-  },
-
-  // Analytics Service
-  ANALYTICS: {
-    CANDIDATE_STATS: '/analytics/candidate',
-    RECRUITER_STATS: '/analytics/recruiter',
-    JOB_STATS: (jobId) => `/analytics/jobs/${jobId}`
+    COMPLETE: (id) => `/interviews/${id}/complete`,
+    CANCEL: (id) => `/interviews/${id}/cancel`
   },
 
   // Notification Service
@@ -110,7 +91,16 @@ export const ENDPOINTS = {
     AVAILABLE_PLANS: '/subscriptions/plans',
     UPGRADE: '/subscriptions/upgrade',
     CANCEL: '/subscriptions/cancel',
-    INVOICES: '/subscriptions/invoices'
+    PAYMENT_HISTORY: '/subscriptions/payments',
+    INVOICE: (paymentId) => `/subscriptions/payments/${paymentId}/invoice`
+  },
+
+  // Analytics Service
+  ANALYTICS: {
+    OVERVIEW: '/analytics/overview',
+    RECRUITER_DASHBOARD: '/analytics/recruiter/dashboard',
+    CANDIDATE_STATS: (candidateId) => `/analytics/candidates/${candidateId}`,
+    JOB_STATS: (jobId) => `/analytics/jobs/${jobId}`
   }
 }
 

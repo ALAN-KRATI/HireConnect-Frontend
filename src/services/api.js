@@ -31,17 +31,21 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // If no response (network issue), reject with specific message
     if (!error.response) {
+      console.error('Network error - no response:', error.message)
       return Promise.reject(new Error(ERROR_MESSAGES.NETWORK_ERROR))
     }
 
-    const { status } = error.response
+    const { status, data } = error.response
+    console.log(`API Error: ${status}`, data)
+    
     switch (status) {
       case HTTP_STATUS.UNAUTHORIZED:
+        // Don't redirect, just reject with 401
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-        window.location.href = '/login'
-        break
+        return Promise.reject(error)
       case HTTP_STATUS.FORBIDDEN:
         console.error(ERROR_MESSAGES.FORBIDDEN)
         break

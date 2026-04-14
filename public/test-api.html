@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <p>Open DevTools (F12) → Console for detailed logs</p>
+    <div id="results"></div>
+    
+    <h2>Axios Test (Simulates Frontend)</h2>
+    <button onclick="testAxios()">Test with Axios-style Request</button>
+    <pre id="axios-result"></pre>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        async function testEndpoint(name, url) {
+            const start = Date.now();
+            try {
+                console.log(`Testing ${name}: ${url}`);
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const time = Date.now() - start;
+                const text = await response.text();
+                const preview = text.substring(0, 100);
+                
+                console.log(`${name} Result:`, { status: response.status, time, preview });
+                results.innerHTML += `<p class="${response.ok ? 'success' : ''}"><strong>${name}</strong>: ${response.status} (${time}ms) - ${preview}...</p>`;
+                
+                return { success: true, status: response.status, time, text };
+            } catch (error) {
+                const time = Date.now() - start;
+                console.error(`${name} Error:`, error);
+                results.innerHTML += `<p class="error"><strong>${name}</strong>: FAILED - ${error.message} (${time}ms)</p>`;
+                return { success: false, error: error.message, time };
+            }
+        }
+        
+        async function testAxios() {
+            const resultDiv = document.getElementById('axios-result');
+            resultDiv.textContent = 'Testing with Axios...';
+            
+            try {
+                // Test 1: Jobs (should work without auth)
+                console.log('Axios Test 1: Jobs');
+                const jobsResponse = await axios.get('/api/jobs', { timeout: 10000 });
+                
+                // Test 2: Notifications (requires auth, should get 401)
+                console.log('Axios Test 2: Notifications');
+                let notifResult = 'Not tested';
+                try {
+                    const notifResponse = await axios.get('/api/notifications', { timeout: 10000 });
+                    notifResult = `Status: ${notifResponse.status}`;
+                } catch (e) {
+                    notifResult = e.response ? `Status: ${e.response.status}` : `Error: ${e.message}`;
+                }
+                
+                resultDiv.textContent = `Jobs API: Success (${jobsResponse.status})\nNotifications API: ${notifResult}`;
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}\n\nFull Error:\n${JSON.stringify(error, null, 2)}`;
+            }
+        }
+        
+        async function runTests() {
+            results.innerHTML += '<h2>Testing Via Vite Proxy:</h2>';
+            
+            // These should all go through Vite proxy to localhost:8080
+            await testEndpoint('Proxy - Jobs', '/api/jobs');
+            await testEndpoint('Proxy - Notifications', '/api/notifications');
+            await testEndpoint('Proxy - Applications', '/api/applications/candidate/me');
+            
+            results.innerHTML += '<h2>Testing Direct Backend:</h2>';
+            await testEndpoint('Direct - Jobs', 'http://localhost:8080/jobs');
+            await testEndpoint('Direct - Notifications', 'http://localhost:8080/notifications');
+        }
+        
+        // Run tests immediately
+        runTests();
+    </script>
+</body>
+</html>

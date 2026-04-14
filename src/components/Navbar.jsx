@@ -26,10 +26,15 @@ const Navbar = () => {
   const fetchNotifications = async () => {
     try {
       const response = await notificationService.getNotifications()
-      setNotifications(response.data)
-      setUnreadCount(response.data.filter(n => !n.read).length)
+      // Ensure we always have an array
+      const notificationsArray = Array.isArray(response.data) ? response.data : []
+      setNotifications(notificationsArray)
+      setUnreadCount(notificationsArray.filter(n => !n.read).length)
     } catch (error) {
       console.error('Error fetching notifications:', error)
+      // On error, set empty array instead of leaving undefined
+      setNotifications([])
+      setUnreadCount(0)
     }
   }
 

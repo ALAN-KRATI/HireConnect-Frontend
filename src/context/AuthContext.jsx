@@ -14,29 +14,36 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      // Validate token and get user info
-      authService.validateToken(token)
-        .then(response => {
-          if (response.data) {
+    const validateStoredToken = async () => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        try {
+          const response = await authService.validateToken(token)
+          if (response.data && response.data.email) {
             setUser({
               token,
               email: response.data.email,
               role: response.data.role,
               userId: response.data.userId
             })
+          } else {
+            // Token invalid but got response
+            localStorage.removeItem('token')
           }
-        })
-        .catch(() => {
+        } catch (error) {
+          // Token validation failed - silently remove it
+          console.log('Token validation failed, clearing stored token')
           localStorage.removeItem('token')
-        })
-        .finally(() => setLoading(false))
-    } else {
+        }
+      }
       setLoading(false)
+      setInitialized(true)
     }
+
+    validateStoredToken()
   }, [])
 
   const login = async (email, password) => {
@@ -66,6 +73,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    initialized,
     login,
     loginWithOAuth,
     register,
@@ -75,5 +83,7 @@ export const AuthProvider = ({ children }) => {
     isRecruiter: user?.role === 'RECRUITER'
   }
 
+  // DON'T BLOCK RENDERING - Let pages load immediately
+  // Token validation happens in background
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

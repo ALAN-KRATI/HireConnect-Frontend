@@ -23,18 +23,24 @@ const CandidateDashboard = () => {
       setLoading(true)
       // Fetch applications
       const appsResponse = await applicationService.getMyApplications()
-      setRecentApplications(appsResponse.data.slice(0, 5))
-      setStats(prev => ({ ...prev, applicationsSubmitted: appsResponse.data.length }))
+      const applicationsArray = Array.isArray(appsResponse.data) ? appsResponse.data : []
+      setRecentApplications(applicationsArray.slice(0, 5))
+      setStats(prev => ({ ...prev, applicationsSubmitted: applicationsArray.length }))
 
       // Fetch saved jobs count
       const savedResponse = await profileService.getSavedJobs()
-      setStats(prev => ({ ...prev, savedJobs: savedResponse.data.length }))
+      const savedArray = Array.isArray(savedResponse.data) ? savedResponse.data : []
+      setStats(prev => ({ ...prev, savedJobs: savedArray.length }))
 
       // Fetch recommended jobs
       const jobsResponse = await jobService.getAllJobs()
-      setRecommendedJobs(jobsResponse.data.slice(0, 3))
+      const jobsArray = Array.isArray(jobsResponse.data) ? jobsResponse.data : []
+      setRecommendedJobs(jobsArray.slice(0, 3))
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
+      // Set defaults on error
+      setRecentApplications([])
+      setRecommendedJobs([])
     } finally {
       setLoading(false)
     }
