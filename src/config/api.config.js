@@ -75,6 +75,7 @@ export const ENDPOINTS = {
     GET_BY_APPLICATION: (applicationId) => `/interviews/application/${applicationId}`,
     GET_BY_CANDIDATE: (candidateId) => `/interviews/candidate/${candidateId}`,
     GET_BY_RECRUITER: (recruiterId) => `/interviews/recruiter/${recruiterId}`,
+    MY_INTERVIEWS: '/interviews/my-interviews',
     COMPLETE: (id) => `/interviews/${id}/complete`,
     CANCEL: (id) => `/interviews/${id}/cancel`
   },

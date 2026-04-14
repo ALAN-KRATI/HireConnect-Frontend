@@ -227,7 +227,7 @@ const Profile = () => {
                   <input
                     type="text"
                     name="skills"
-                    value={formData.skills?.join(', ') || ''}
+                    value={typeof formData.skills === 'string' ? formData.skills : (formData.skills?.join(', ') || '')}
                     onChange={(e) => setFormData({ ...formData, skills: e.target.value.split(',').map(s => s.trim()) })}
                     disabled={!editing}
                     placeholder="Java, Spring Boot, Hibernate, SQL"
