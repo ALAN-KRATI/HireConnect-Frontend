@@ -115,6 +115,30 @@ const ManageApplications = () => {
     }
   }
 
+  const handleShortlist = async (applicationId) => {
+    if (!confirm('Are you sure you want to shortlist this candidate?')) return
+    try {
+      await applicationService.shortlistCandidate(applicationId)
+      fetchApplications()
+      alert('Candidate shortlisted successfully!')
+    } catch (error) {
+      console.error('Error shortlisting candidate:', error)
+      alert('Failed to shortlist candidate')
+    }
+  }
+
+  const handleReject = async (applicationId) => {
+    if (!confirm('Are you sure you want to reject this candidate?')) return
+    try {
+      await applicationService.rejectCandidate(applicationId)
+      fetchApplications()
+      alert('Candidate rejected successfully!')
+    } catch (error) {
+      console.error('Error rejecting candidate:', error)
+      alert('Failed to reject candidate')
+    }
+  }
+
   const viewApplicationDetail = (application) => {
     setSelectedApplication(application)
     setShowDetailModal(true)
@@ -238,20 +262,55 @@ const ManageApplications = () => {
                         {app.status?.replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                     <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <button
                           onClick={() => viewApplicationDetail(app)}
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                          className="text-blue-600 hover:text-blue-700 text-sm font-medium px-2 py-1 border border-blue-600 rounded hover:bg-blue-50 transition-colors"
                         >
                           View
                         </button>
+                        
+                        {app.status === 'APPLIED' && (
+                          <>
+                            <button
+                              onClick={() => handleShortlist(app.applicationId)}
+                              className="text-green-600 hover:text-green-700 text-sm font-medium px-2 py-1 border border-green-600 rounded hover:bg-green-50 transition-colors"
+                            >
+                              Shortlist
+                            </button>
+                            <button
+                              onClick={() => handleReject(app.applicationId)}
+                              className="text-red-600 hover:text-red-700 text-sm font-medium px-2 py-1 border border-red-600 rounded hover:bg-red-50 transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        
                         {app.status === 'SHORTLISTED' && (
+                          <>
+                            <button
+                              onClick={() => openInterviewModal(app)}
+                              className="text-purple-600 hover:text-purple-700 text-sm font-medium px-2 py-1 border border-purple-600 rounded hover:bg-purple-50 transition-colors"
+                            >
+                              Schedule Interview
+                            </button>
+                            <button
+                              onClick={() => handleReject(app.applicationId)}
+                              className="text-red-600 hover:text-red-700 text-sm font-medium px-2 py-1 border border-red-600 rounded hover:bg-red-50 transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        
+                        {(app.status === 'INTERVIEW_SCHEDULED' || app.status === 'OFFERED') && (
                           <button
-                            onClick={() => openInterviewModal(app)}
-                            className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                            onClick={() => handleReject(app.applicationId)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium px-2 py-1 border border-red-600 rounded hover:bg-red-50 transition-colors"
                           >
-                            Schedule Interview
+                            Reject
                           </button>
                         )}
                       </div>

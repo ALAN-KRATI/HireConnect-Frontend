@@ -19,6 +19,7 @@ import ManageJobs from './pages/recruiter/ManageJobs'
 import ManageApplications from './pages/recruiter/ManageApplications'
 import CreateJob from './pages/recruiter/CreateJob'
 import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -91,6 +92,11 @@ function App() {
             <Route path="/profile" element={
               <ProtectedRoute allowedRoles={['CANDIDATE', 'RECRUITER']}>
                 <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute allowedRoles={['CANDIDATE', 'RECRUITER']}>
+                <Settings />
               </ProtectedRoute>
             } />
 
