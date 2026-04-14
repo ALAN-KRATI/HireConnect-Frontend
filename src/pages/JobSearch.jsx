@@ -22,6 +22,15 @@ const JobSearch = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Auto-apply filters when they change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      applyFilters()
+    }, 300) // Debounce for 300ms
+    return () => clearTimeout(timeoutId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, filters])
+
   const fetchJobs = async () => {
     try {
       setLoading(true)
@@ -205,12 +214,9 @@ const JobSearch = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={applyFilters}
-                  className="w-full py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Apply Filters
-                </button>
+                <div className="text-xs text-gray-500 text-center">
+                  Filters apply automatically
+                </div>
               </div>
             </div>
           </div>
