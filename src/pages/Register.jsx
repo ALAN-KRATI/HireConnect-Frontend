@@ -237,9 +237,9 @@ const Register = () => {
           <div className="mt-4 text-center text-sm">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <button onClick={handleGitHubLogin} className="text-blue-600 hover:text-blue-700 font-medium">
-                Login with GitHub →
-              </button>
+              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                Sign In →
+              </Link>
             </p>
           </div>
         </div>
