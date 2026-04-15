@@ -83,7 +83,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     isAuthenticated: !!user,
     isCandidate: user?.role === 'CANDIDATE',
-    isRecruiter: user?.role === 'RECRUITER'
+    isRecruiter: user?.role === 'RECRUITER',
+    isAdmin: user?.role === 'ADMIN'
   }
 
   // DON'T BLOCK RENDERING - Let pages load immediately

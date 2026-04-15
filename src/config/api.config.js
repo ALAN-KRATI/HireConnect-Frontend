@@ -35,6 +35,7 @@ export const ENDPOINTS = {
     GET_ALL_RECRUITERS: '/profiles/recruiters',
     ME: '/profiles/me',
     RESUME: '/profiles/resume',
+    PARSE_RESUME: '/profiles/resume/parse',
     SAVED_JOBS: '/profiles/saved-jobs',
     SAVE_JOB: (jobId) => `/profiles/saved-jobs/${jobId}`,
     UNSAVE_JOB: (jobId) => `/profiles/saved-jobs/${jobId}`

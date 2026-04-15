@@ -127,6 +127,14 @@ export const profileService = {
     })
   },
 
+  parseResume: (file) => {
+    const formData = new FormData()
+    formData.append('resume', file)
+    return api.post(ENDPOINTS.PROFILES.PARSE_RESUME, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
   // Saved jobs
   getSavedJobs: () => api.get(ENDPOINTS.PROFILES.SAVED_JOBS),
 

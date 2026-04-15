@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { profileService } from '../services/api'
+import ResumeUpload from '../components/ResumeUpload'
 
 const Profile = () => {
   const { user, isCandidate, isRecruiter } = useAuth()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const [showResumeUpload, setShowResumeUpload] = useState(false)
   const [formData, setFormData] = useState({})
 
   useEffect(() => {
@@ -55,6 +57,17 @@ const Profile = () => {
       console.error('Error uploading resume:', error)
       alert('Failed to upload resume')
     }
+  }
+
+  const handleResumeParsed = (parsedData) => {
+    setFormData(prev => ({
+      ...prev,
+      fullName: parsedData.fullName || prev.fullName,
+      skills: parsedData.skills || prev.skills,
+      experience: parsedData.experience?.length || prev.experience
+    }))
+    setEditing(true)
+    alert('Resume parsed! Please review the extracted information and save your changes.')
   }
 
   if (loading) {
@@ -219,7 +232,17 @@ const Profile = () => {
                       Upload
                       <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} className="hidden" />
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowResumeUpload(true)}
+                      className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Auto-Fill
+                    </button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Use "Auto-Fill" to parse your resume and automatically populate your profile
+                  </p>
                 </div>
 
                 <div>
@@ -342,6 +365,15 @@ const Profile = () => {
           </form>
         </div>
       </div>
+
+      {showResumeUpload && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <ResumeUpload 
+            onParsedData={handleResumeParsed}
+            onClose={() => setShowResumeUpload(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }

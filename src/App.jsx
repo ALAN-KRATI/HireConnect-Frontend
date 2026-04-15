@@ -26,6 +26,7 @@ import PaymentCancel from './pages/recruiter/PaymentCancel'
 import InvoicesPage from './pages/recruiter/InvoicesPage'
 import AnalyticsDashboard from './pages/recruiter/AnalyticsDashboard'
 import SubscriptionPage from './pages/recruiter/SubscriptionPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -153,6 +154,13 @@ function App() {
             <Route path="/settings" element={
               <ProtectedRoute allowedRoles={['CANDIDATE', 'RECRUITER']}>
                 <Settings />
+              </ProtectedRoute>
+            } />
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminDashboard />
               </ProtectedRoute>
             } />
 
