@@ -99,7 +99,7 @@ export const ENDPOINTS = {
   // Analytics Service
   ANALYTICS: {
     OVERVIEW: '/analytics/overview',
-    RECRUITER_DASHBOARD: '/analytics/recruiter/dashboard',
+    RECRUITER_STATS: (recruiterId) => `/analytics/recruiter/${recruiterId}/dashboard`,
     CANDIDATE_STATS: (candidateId) => `/analytics/candidates/${candidateId}`,
     JOB_STATS: (jobId) => `/analytics/jobs/${jobId}`
   }

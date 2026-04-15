@@ -234,9 +234,9 @@ export const interviewService = {
 // Analytics Service
 // ============================================================================
 export const analyticsService = {
-  getCandidateStats: () => api.get(ENDPOINTS.ANALYTICS.CANDIDATE_STATS),
+  getCandidateStats: (candidateId) => api.get(ENDPOINTS.ANALYTICS.CANDIDATE_STATS(candidateId)),
 
-  getRecruiterStats: () => api.get(ENDPOINTS.ANALYTICS.RECRUITER_STATS),
+  getRecruiterStats: (recruiterId) => api.get(ENDPOINTS.ANALYTICS.RECRUITER_STATS(recruiterId)),
 
   getJobStats: (jobId) => api.get(ENDPOINTS.ANALYTICS.JOB_STATS(jobId))
 }
@@ -254,15 +254,15 @@ export const notificationService = {
 // Subscription Service
 // ============================================================================
 export const subscriptionService = {
-  getCurrentPlan: () => api.get(ENDPOINTS.SUBSCRIPTIONS.CURRENT_PLAN),
+  getCurrentPlan: (recruiterId) => api.get(`${ENDPOINTS.SUBSCRIPTIONS.CURRENT_PLAN}?recruiterId=${recruiterId}`),
 
   getAvailablePlans: () => api.get(ENDPOINTS.SUBSCRIPTIONS.AVAILABLE_PLANS),
 
-  upgradePlan: (plan) => api.post(ENDPOINTS.SUBSCRIPTIONS.UPGRADE, { plan }),
+  upgradePlan: (recruiterId, plan) => api.post(`${ENDPOINTS.SUBSCRIPTIONS.UPGRADE}?recruiterId=${recruiterId}&plan=${plan}`),
 
   cancelSubscription: () => api.post(ENDPOINTS.SUBSCRIPTIONS.CANCEL),
 
-  getInvoices: () => api.get(ENDPOINTS.SUBSCRIPTIONS.INVOICES)
+  getInvoices: (recruiterId) => api.get(`${ENDPOINTS.SUBSCRIPTIONS.INVOICES}/${recruiterId}`)
 }
 
 export default api

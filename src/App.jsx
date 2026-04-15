@@ -1,6 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
+import RecruiterNavbar from './components/RecruiterNavbar'
+import { useAuth } from './context/AuthContext'
 import LandingPage from './pages/LandingPage'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -23,21 +25,48 @@ import PaymentSuccess from './pages/recruiter/PaymentSuccess'
 import PaymentCancel from './pages/recruiter/PaymentCancel'
 import InvoicesPage from './pages/recruiter/InvoicesPage'
 import AnalyticsDashboard from './pages/recruiter/AnalyticsDashboard'
+import SubscriptionPage from './pages/recruiter/SubscriptionPage'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
+
+function DynamicNavbar() {
+  const location = useLocation()
+  const { user } = useAuth()
+  
+  // Check if we're on a recruiter route
+  const isRecruiterRoute = location.pathname.startsWith('/recruiter')
+  const isRecruiter = user?.role === 'RECRUITER'
+  
+  // Show RecruiterNavbar for recruiter routes OR when user is a recruiter
+  if (isRecruiterRoute || isRecruiter) {
+    return <RecruiterNavbar />
+  }
+  
+  // Show generic Navbar for all other routes (landing page, public pages, candidate routes)
+  return <Navbar />
+}
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
-          <Navbar />
+          <DynamicNavbar />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } />
+            <Route path="/register" element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            } />
             <Route path="/auth/callback" element={<OAuthCallback />} />
             <Route path="/employers" element={<ForEmployers />} />
             <Route path="/about" element={<About />} />
@@ -95,6 +124,11 @@ function App() {
             <Route path="/recruiter/upgrade" element={
               <ProtectedRoute allowedRoles={['RECRUITER']}>
                 <PaymentPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/recruiter/subscription" element={
+              <ProtectedRoute allowedRoles={['RECRUITER']}>
+                <SubscriptionPage />
               </ProtectedRoute>
             } />
             <Route path="/recruiter/invoices" element={

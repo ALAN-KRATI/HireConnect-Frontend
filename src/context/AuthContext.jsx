@@ -50,6 +50,7 @@ export const AuthProvider = ({ children }) => {
     const response = await authService.login({ email, password })
     const { token, role, userId } = response.data
     localStorage.setItem('token', token)
+    localStorage.setItem('userId', userId)
     setUser({ token, email, role, userId })
     return { role }
   }
@@ -66,6 +67,8 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithOAuth = useCallback(async (email, token, role, userId) => {
     localStorage.setItem('token', token)
+    localStorage.setItem('userId', userId)
+    localStorage.setItem('userRole', role)
     setUser({ token, email, role, userId })
     return { role }
   }, [])

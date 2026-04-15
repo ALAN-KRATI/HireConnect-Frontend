@@ -41,7 +41,7 @@ const JobDetails = () => {
     try {
       const response = await applicationService.getMyApplications()
       const applications = response.data || []
-      const applied = applications.some(app => app.jobId === parseInt(id))
+      const applied = applications.some(app => app.jobId === Number(id))
       setHasApplied(applied)
     } catch (error) {
       console.error('Error checking application status:', error)
@@ -66,7 +66,7 @@ const JobDetails = () => {
     try {
       setApplying(true)
       const applicationData = {
-        jobId: parseInt(id),
+        jobId: Number(id),
         recruiterId: job.postedBy,
         coverLetter: coverLetter
       }
@@ -159,36 +159,48 @@ const JobDetails = () => {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button
-                    onClick={handleSaveJob}
-                    className={`px-4 py-2 border rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                      saved
-                        ? 'border-blue-600 text-blue-600 bg-blue-50'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <svg className="w-5 h-5" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                    </svg>
-                    {saved ? 'Saved' : 'Save Job'}
-                  </button>
-                  {hasApplied ? (
-                    <Link
-                      to="/candidate/applications"
-                      className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-                    >
+                  {isCandidate && (
+                    <>
+                      <button
+                        onClick={handleSaveJob}
+                        className={`px-4 py-2 border rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                          saved
+                            ? 'border-blue-600 text-blue-600 bg-blue-50'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                        {saved ? 'Saved' : 'Save Job'}
+                      </button>
+                      {hasApplied ? (
+                        <Link
+                          to="/candidate/applications"
+                          className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Applied
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={handleApply}
+                          className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Apply Now
+                        </button>
+                      )}
+                    </>
+                  )}
+                  {isRecruiter && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Applied
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={handleApply}
-                      className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Apply Now
-                    </button>
+                      <span>Recruiter View</span>
+                    </div>
                   )}
                 </div>
               </div>

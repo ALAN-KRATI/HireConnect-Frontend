@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { API_CONFIG } from '../../config/api.config';
+import { SUBSCRIPTION_PLANS, getPlanByName } from '../../config/subscription.config';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -11,11 +12,8 @@ const CheckoutForm = ({ selectedPlan, onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const planPrices = {
-    FREE: 0,
-    PROFESSIONAL: 999,
-    ENTERPRISE: 2999
-  };
+  const plan = getPlanByName(selectedPlan);
+  const planPrice = plan.price;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,7 +88,7 @@ const CheckoutForm = ({ selectedPlan, onSuccess, onCancel }) => {
         </div>
         <div className="flex justify-between items-center mt-2">
           <span className="text-gray-700">Amount:</span>
-          <span className="font-bold text-2xl text-blue-600">₹{planPrices[selectedPlan]}</span>
+          <span className="font-bold text-2xl text-blue-600">{plan.priceFormatted}</span>
         </div>
       </div>
 
@@ -137,7 +135,7 @@ const CheckoutForm = ({ selectedPlan, onSuccess, onCancel }) => {
           disabled={!stripe || loading}
           className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? 'Processing...' : `Pay ₹${planPrices[selectedPlan]}`}
+          {loading ? 'Processing...' : `Pay ${plan.priceFormatted}`}
         </button>
       </div>
     </form>
@@ -147,24 +145,20 @@ const CheckoutForm = ({ selectedPlan, onSuccess, onCancel }) => {
 const PaymentPage = () => {
   const [step, setStep] = useState('select');
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [plans, setPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
 
-  const plans = [
-    {
-      name: 'FREE',
-      price: 0,
-      features: ['Up to 3 job postings', 'Basic analytics', 'Email support']
-    },
-    {
-      name: 'PROFESSIONAL',
-      price: 999,
-      features: ['Up to 20 job postings', 'Advanced analytics', 'Priority support', 'Featured jobs']
-    },
-    {
-      name: 'ENTERPRISE',
-      price: 2999,
-      features: ['Unlimited job postings', 'Full analytics suite', 'Dedicated support', 'API access', 'Custom branding']
-    }
-  ];
+  useEffect(() => {
+    // Convert SUBSCRIPTION_PLANS object to array for rendering
+    const plansArray = Object.values(SUBSCRIPTION_PLANS).map(plan => ({
+      name: plan.name,
+      price: plan.price,
+      priceFormatted: plan.priceFormatted,
+      features: plan.features
+    }));
+    setPlans(plansArray);
+    setLoadingPlans(false);
+  }, []);
 
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
@@ -197,36 +191,42 @@ const PaymentPage = () => {
 
         {step === 'select' && (
           <div className="grid md:grid-cols-3 gap-8">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`bg-white rounded-xl shadow-lg overflow-hidden border-2 transition-all cursor-pointer hover:shadow-xl ${
-                  selectedPlan?.name === plan.name ? 'border-blue-500' : 'border-transparent'
-                }`}
-                onClick={() => handlePlanSelect(plan.name)}
-              >
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{plan.name}</h3>
-                  <div className="flex items-baseline mb-6">
-                    <span className="text-4xl font-bold text-blue-600">₹{plan.price}</span>
-                    <span className="text-gray-500 ml-2">/month</span>
-                  </div>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start">
-                        <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="text-gray-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                    Select {plan.name}
-                  </button>
-                </div>
+            {loadingPlans ? (
+              <div className="col-span-3 flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
-            ))}
+            ) : (
+              plans.map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`bg-white rounded-xl shadow-lg overflow-hidden border-2 transition-all cursor-pointer hover:shadow-xl ${
+                    selectedPlan?.name === plan.name ? 'border-blue-500' : 'border-transparent'
+                  }`}
+                  onClick={() => handlePlanSelect(plan.name)}
+                >
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{plan.name}</h3>
+                    <div className="flex items-baseline mb-6">
+                      <span className="text-4xl font-bold text-blue-600">{plan.priceFormatted}</span>
+                      <span className="text-gray-500 ml-2">/month</span>
+                    </div>
+                    <ul className="space-y-3 mb-6">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-gray-600">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <button className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                      Select {plan.name}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 
