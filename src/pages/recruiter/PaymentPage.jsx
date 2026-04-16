@@ -4,7 +4,14 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { API_CONFIG } from '../../config/api.config';
 import { SUBSCRIPTION_PLANS, getPlanByName } from '../../config/subscription.config';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+// Stripe's JS SDK prints a noisy "Please call Stripe() with your
+// publishable key" warning when given an empty string. If the dev hasn't
+// provided their own key in .env, skip initialising Stripe entirely —
+// downstream code guards on `stripePromise` being null.
+const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_PK && STRIPE_PK.startsWith('pk_')
+  ? loadStripe(STRIPE_PK)
+  : null;
 
 const CheckoutForm = ({ selectedPlan, onSuccess, onCancel }) => {
   const stripe = useStripe();
@@ -232,13 +239,24 @@ const PaymentPage = () => {
 
         {step === 'payment' && (
           <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
-            <Elements stripe={stripePromise}>
-              <CheckoutForm
-                selectedPlan={selectedPlan}
-                onSuccess={handleSuccess}
-                onCancel={handleCancel}
-              />
-            </Elements>
+            {stripePromise ? (
+              <Elements stripe={stripePromise}>
+                <CheckoutForm
+                  selectedPlan={selectedPlan}
+                  onSuccess={handleSuccess}
+                  onCancel={handleCancel}
+                />
+              </Elements>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-700 mb-2 font-medium">Stripe is not configured.</p>
+                <p className="text-sm text-gray-500">
+                  Set <code className="bg-gray-100 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code>
+                  &nbsp;in <code className="bg-gray-100 px-1 rounded">HireConnect-Frontend/.env</code>
+                  &nbsp;and rebuild the frontend container to enable payments.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
