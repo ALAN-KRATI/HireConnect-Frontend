@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { jobService } from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 
 const CreateJob = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -110,7 +112,8 @@ const CreateJob = () => {
         experienceRequired: Number(formData.experienceRequired),
         minSalary: Number(formData.minSalary),
         maxSalary: Number(formData.maxSalary),
-        requirements: formData.requirements.filter(r => r.trim())
+        requirements: formData.requirements.filter(r => r.trim()),
+        postedBy: user?.userId
       }
       await jobService.createJob(jobData)
       alert('Job posted successfully!')

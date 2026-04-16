@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 const JobDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAuthenticated, isCandidate, user } = useAuth()
+  const { isAuthenticated, isCandidate, isRecruiter, user } = useAuth()
   const [job, setJob] = useState(null)
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(false)
