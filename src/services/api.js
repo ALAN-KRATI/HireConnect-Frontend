@@ -41,11 +41,21 @@ api.interceptors.response.use(
     console.log(`API Error: ${status}`, data)
     
     switch (status) {
-      case HTTP_STATUS.UNAUTHORIZED:
-        // Don't redirect, just reject with 401
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
+      case HTTP_STATUS.UNAUTHORIZED: {
+        // Only wipe credentials when the /auth/* endpoints themselves reject
+        // the token. A 401 from any other service (e.g. Eureka registration
+        // lag right after login) must NOT log the user out and kick them
+        // back to /login.
+        const url = error.config?.url || ''
+        if (url.includes('/auth/')) {
+          localStorage.removeItem('token')
+          localStorage.removeItem('userId')
+          localStorage.removeItem('role')
+          localStorage.removeItem('userRole')
+          localStorage.removeItem('user')
+        }
         return Promise.reject(error)
+      }
       case HTTP_STATUS.FORBIDDEN:
         console.error(ERROR_MESSAGES.FORBIDDEN)
         break

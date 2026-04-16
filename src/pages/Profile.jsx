@@ -35,8 +35,18 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await profileService.updateProfile(formData)
-      setProfile(formData)
+      const skills = Array.isArray(formData.skills)
+        ? formData.skills
+        : (typeof formData.skills === 'string'
+            ? formData.skills.split(',').map(s => s.trim()).filter(Boolean)
+            : [])
+      const experience = typeof formData.experience === 'string'
+        ? parseInt(formData.experience, 10) || 0
+        : (formData.experience ?? 0)
+
+      const payload = { ...formData, skills, experience }
+      await profileService.updateProfile(payload)
+      setProfile(payload)
       setEditing(false)
       alert('Profile updated successfully!')
     } catch (error) {

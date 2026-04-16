@@ -51,6 +51,8 @@ export const AuthProvider = ({ children }) => {
     const { token, role, userId } = response.data
     localStorage.setItem('token', token)
     localStorage.setItem('userId', userId)
+    localStorage.setItem('role', role)
+    localStorage.setItem('userRole', role)
     setUser({ token, email, role, userId })
     return { role }
   }
@@ -62,6 +64,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('userId')
+    localStorage.removeItem('role')
+    localStorage.removeItem('userRole')
     setUser(null)
   }
 
