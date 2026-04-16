@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { jobService } from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 
 const ManageJobs = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('ALL')
@@ -12,14 +14,15 @@ const ManageJobs = () => {
   const [jobToDelete, setJobToDelete] = useState(null)
 
   useEffect(() => {
-    fetchJobs()
-  }, [])
+    if (user?.userId) fetchJobs()
+  }, [user?.userId])
 
   const fetchJobs = async () => {
     try {
       setLoading(true)
-      const response = await jobService.getAllJobs()
-      setJobs(response.data)
+      // Recruiter's own jobs only; calling /jobs would leak every recruiter's postings.
+      const response = await jobService.getJobsByRecruiter(user.userId)
+      setJobs(response.data || [])
     } catch (error) {
       console.error('Error fetching jobs:', error)
     } finally {
