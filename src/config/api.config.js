@@ -99,9 +99,9 @@ export const ENDPOINTS = {
 
   // Analytics Service
   ANALYTICS: {
-    OVERVIEW: '/analytics/overview',
+    PLATFORM_SUMMARY: '/analytics/platform/summary',
     RECRUITER_STATS: (recruiterId) => `/analytics/recruiter/${recruiterId}/dashboard`,
-    CANDIDATE_STATS: (candidateId) => `/analytics/candidates/${candidateId}`,
+    CANDIDATE_STATS: '/analytics/candidate',
     JOB_STATS: (jobId) => `/analytics/jobs/${jobId}`
   }
 }

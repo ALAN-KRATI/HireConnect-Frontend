@@ -61,6 +61,9 @@ const Profile = () => {
 
     try {
       await profileService.uploadResume(file)
+      // Optimistically reflect the filename in UI before refetch returns
+      setFormData(prev => ({ ...prev, resumeName: file.name }))
+      setProfile(prev => ({ ...(prev || {}), resumeName: file.name }))
       alert('Resume uploaded successfully!')
       fetchProfile()
     } catch (error) {
@@ -235,7 +238,7 @@ const Profile = () => {
                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span className="text-gray-600">{profile?.resumeName || 'No resume uploaded'}</span>
+                        <span className="text-gray-600">{formData?.resumeName || profile?.resumeName || 'No resume uploaded'}</span>
                       </div>
                     </div>
                     <label className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">

@@ -252,7 +252,7 @@ export const interviewService = {
 // Analytics Service
 // ============================================================================
 export const analyticsService = {
-  getCandidateStats: (candidateId) => api.get(ENDPOINTS.ANALYTICS.CANDIDATE_STATS(candidateId)),
+  getCandidateStats: () => api.get(ENDPOINTS.ANALYTICS.CANDIDATE_STATS),
 
   getRecruiterStats: (recruiterId) => api.get(ENDPOINTS.ANALYTICS.RECRUITER_STATS(recruiterId)),
 
@@ -265,7 +265,8 @@ export const analyticsService = {
 export const notificationService = {
   getNotifications: () => api.get(ENDPOINTS.NOTIFICATIONS.LIST),
 
-  markAsRead: (id) => api.post(ENDPOINTS.NOTIFICATIONS.MARK_READ(id))
+  // Backend expects PUT /notifications/{id}/read
+  markAsRead: (id) => api.put(`/notifications/${id}/read`)
 }
 
 // ============================================================================
@@ -280,7 +281,7 @@ export const subscriptionService = {
 
   cancelSubscription: () => api.post(ENDPOINTS.SUBSCRIPTIONS.CANCEL),
 
-  getInvoices: (recruiterId) => api.get(`${ENDPOINTS.SUBSCRIPTIONS.INVOICES}/${recruiterId}`)
+  getInvoices: (recruiterId) => api.get(`/subscriptions/invoices/${recruiterId}`)
 }
 
 export default api

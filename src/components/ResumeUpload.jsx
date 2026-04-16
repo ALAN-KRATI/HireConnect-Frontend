@@ -73,7 +73,7 @@ const ResumeUpload = ({ onParsedData, onClose }) => {
     formData.append('resume', file)
     
     try {
-      const response = await api.post('/api/profile/resume/parse', formData, {
+      const response = await api.post('/profiles/resume/parse', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
