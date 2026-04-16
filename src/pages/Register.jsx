@@ -29,8 +29,18 @@ const Register = () => {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters')
+      return
+    }
+
+    if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
+      setError('Mobile number must be a valid 10-digit Indian number starting with 6-9')
+      return
+    }
+
+    if (!formData.fullName || formData.fullName.trim().length < 2) {
+      setError('Full name is required')
       return
     }
 
@@ -123,10 +133,12 @@ const Register = () => {
                   name="password"
                   type="password"
                   required
+                  minLength={8}
+                  title="At least 8 characters"
                   value={formData.password}
                   onChange={handleChange}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Create a strong password"
+                  placeholder="Create a strong password (min 8 chars)"
                 />
               </div>
             </div>
@@ -162,10 +174,14 @@ const Register = () => {
                   name="mobile"
                   type="tel"
                   required
+                  pattern="[6-9][0-9]{9}"
+                  maxLength={10}
+                  inputMode="numeric"
+                  title="10-digit Indian mobile number starting with 6-9"
                   value={formData.mobile}
                   onChange={handleChange}
                   className="block w-full pl-20 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="98765 43210"
+                  placeholder="9876543210"
                 />
               </div>
             </div>
