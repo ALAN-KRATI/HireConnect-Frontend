@@ -113,32 +113,27 @@ const AnalyticsDashboard = () => {
         <div className="bg-white rounded-xl shadow-md p-6">
           <h2 className="text-xl font-bold mb-4">Candidate Pipeline</h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold">{analytics?.totalApplications ?? 0}</p>
-              <p className="text-gray-600 mt-1">New Applications</p>
-            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold">{analytics?.totalApplications ?? 0}</p>
+                <p className="text-gray-600 mt-1">New Applications</p>
+              </div>
 
-            <div className="bg-indigo-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold">{analytics?.shortlistedCount ?? 0}</p>
-              <p className="text-gray-600 mt-1">Shortlisted</p>
-            </div>
+              <div className="bg-indigo-50 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold">{analytics?.shortlistedCount ?? 0}</p>
+                <p className="text-gray-600 mt-1">Shortlisted</p>
+              </div>
 
-            <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold">{analytics?.interviewScheduledCount ?? 0}</p>
-              <p className="text-gray-600 mt-1">Interview</p>
-            </div>
+              <div className="bg-purple-50 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold">{analytics?.interviewScheduledCount ?? 0}</p>
+                <p className="text-gray-600 mt-1">Interview</p>
+              </div>
 
-            <div className="bg-emerald-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold">{analytics?.offeredCount ?? 0}</p>
-              <p className="text-gray-600 mt-1">Offered</p>
+              <div className="bg-emerald-50 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold">{analytics?.offeredCount ?? 0}</p>
+                <p className="text-gray-600 mt-1">Offered</p>
+              </div>
             </div>
-
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold">{analytics?.hiredCount ?? 0}</p>
-              <p className="text-gray-600 mt-1">Hired</p>
-            </div>
-          </div>
         </div>
 
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">

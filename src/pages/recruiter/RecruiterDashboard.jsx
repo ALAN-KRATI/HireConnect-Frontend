@@ -13,7 +13,6 @@ const RecruiterDashboard = () => {
     interviewsScheduled: 0,
     shortlisted: 0,
     rejected: 0,
-    hired: 0,
     totalCandidates: 0
   })
   const [recentApplications, setRecentApplications] = useState([])
@@ -22,8 +21,7 @@ const RecruiterDashboard = () => {
     { stage: 'Applied', count: 0, color: 'blue' },
     { stage: 'Screening', count: 0, color: 'indigo' },
     { stage: 'Interview', count: 0, color: 'purple' },
-    { stage: 'Offer', count: 0, color: 'emerald' },
-    { stage: 'Hired', count: 0, color: 'green' }
+    { stage: 'Offer', count: 0, color: 'emerald' }
   ])
   const [currentPlan, setCurrentPlan] = useState('FREE')
   const [daysRemaining, setDaysRemaining] = useState(0)
@@ -55,15 +53,13 @@ const RecruiterDashboard = () => {
         Applied: allApps.filter(a => a.status === 'APPLIED' || a.status === 'PENDING').length,
         Screening: allApps.filter(a => a.status === 'SHORTLISTED').length,
         Interview: allApps.filter(a => a.status === 'INTERVIEW_SCHEDULED').length,
-        Offer: allApps.filter(a => a.status === 'OFFERED').length,
-        Hired: allApps.filter(a => a.status === 'HIRED').length
+        Offer: allApps.filter(a => a.status === 'OFFERED').length
       }
       setCandidatePipeline([
         { stage: 'Applied', count: pipeline.Applied, color: 'blue' },
         { stage: 'Screening', count: pipeline.Screening, color: 'indigo' },
         { stage: 'Interview', count: pipeline.Interview, color: 'purple' },
-        { stage: 'Offer', count: pipeline.Offer, color: 'emerald' },
-        { stage: 'Hired', count: pipeline.Hired, color: 'green' }
+        { stage: 'Offer', count: pipeline.Offer, color: 'emerald' }
       ])
 
       // Fetch jobs
@@ -104,7 +100,6 @@ const RecruiterDashboard = () => {
         interviewsScheduled: allApps.filter(a => a.status === 'INTERVIEW_SCHEDULED').length,
         shortlisted: allApps.filter(a => a.status === 'SHORTLISTED').length,
         rejected: allApps.filter(a => a.status === 'REJECTED').length,
-        hired: allApps.filter(a => a.status === 'HIRED').length,
         totalCandidates: allApps.length
       })
 
@@ -149,8 +144,7 @@ const RecruiterDashboard = () => {
       SHORTLISTED: 'bg-blue-100 text-blue-800 border-blue-200',
       REJECTED: 'bg-red-100 text-red-800 border-red-200',
       INTERVIEW_SCHEDULED: 'bg-purple-100 text-purple-800 border-purple-200',
-      OFFERED: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      HIRED: 'bg-green-100 text-green-800 border-green-200'
+      OFFERED: 'bg-emerald-100 text-emerald-800 border-emerald-200'
     }
     return classes[status] || 'bg-gray-100 text-gray-800 border-gray-200'
   }
@@ -161,8 +155,7 @@ const RecruiterDashboard = () => {
       SHORTLISTED: 'Shortlisted',
       REJECTED: 'Rejected',
       INTERVIEW_SCHEDULED: 'Interview',
-      OFFERED: 'Offer Sent',
-      HIRED: 'Hired'
+      OFFERED: 'Offer Sent'
     }
     return labels[status] || status
   }
@@ -314,16 +307,30 @@ const RecruiterDashboard = () => {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium text-gray-600">Hired</p>
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <p className="text-sm font-medium text-gray-600">Offers Sent</p>
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-emerald-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{stats.hired}</p>
+
+            <p className="text-2xl font-bold text-gray-900">
+              {recentApplications.filter(a => a.status === 'OFFERED').length}
+            </p>
+
             <div className="flex items-center mt-2 text-sm">
-              <span className="text-gray-500">this month</span>
+              <span className="text-gray-500">offers made</span>
             </div>
           </div>
         </div>
