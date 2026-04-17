@@ -73,11 +73,26 @@ export const ENDPOINTS = {
   // Interview Service
   INTERVIEWS: {
     SCHEDULE: '/interviews',
-    GET_BY_APPLICATION: (applicationId) => `/interviews/application/${applicationId}`,
-    GET_BY_CANDIDATE: (candidateId) => `/interviews/candidate/${candidateId}`,
-    GET_BY_RECRUITER: (recruiterId) => `/interviews/recruiter/${recruiterId}`,
-    MY_INTERVIEWS: '/interviews/my-interviews',
+
+    GET_BY_ID: (id) => `/interviews/${id}`,
+
+    GET_BY_APPLICATION: (applicationId) =>
+      `/interviews/application/${applicationId}`,
+
+    GET_BY_CANDIDATE: (candidateId) =>
+      `/interviews/candidate/${candidateId}`,
+
+    GET_BY_RECRUITER: (recruiterId) =>
+      `/interviews/recruiter/${recruiterId}`,
+
+    MY_INTERVIEWS: '/interviews/candidate/me',
+
+    CONFIRM: (id) => `/interviews/${id}/confirm`,
+
+    RESCHEDULE: (id) => `/interviews/${id}/reschedule`,
+
     COMPLETE: (id) => `/interviews/${id}/complete`,
+
     CANCEL: (id) => `/interviews/${id}/cancel`
   },
 
