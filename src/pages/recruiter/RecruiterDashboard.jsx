@@ -447,7 +447,17 @@ const RecruiterDashboard = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
-                              // View resume logic
+
+                              if (!app.resumeUrl) {
+                                alert('This candidate has not uploaded a resume yet.')
+                                return
+                              }
+
+                              const resumeUrl = app.resumeUrl.startsWith('http')
+                                ? app.resumeUrl
+                                : `http://localhost:8080${app.resumeUrl}`
+
+                              window.open(resumeUrl, '_blank')
                             }}
                             className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                           >

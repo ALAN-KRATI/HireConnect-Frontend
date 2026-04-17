@@ -99,7 +99,7 @@ const AnalyticsDashboard = () => {
 
           <StatCard
             title="Interviews Scheduled"
-            value={analytics?.interviewsScheduled ?? 0}
+            value={analytics?.interviewScheduledCount ?? 0}
             icon={<span className="text-2xl">📅</span>}
           />
 
@@ -125,7 +125,7 @@ const AnalyticsDashboard = () => {
             </div>
 
             <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold">{analytics?.interviewsScheduled ?? 0}</p>
+              <p className="text-3xl font-bold">{analytics?.interviewScheduledCount ?? 0}</p>
               <p className="text-gray-600 mt-1">Interview</p>
             </div>
 
@@ -146,7 +146,7 @@ const AnalyticsDashboard = () => {
           <p className="text-blue-100 mb-4">
             You currently have {analytics?.totalApplications ?? 0} applications,
             {` ${analytics?.shortlistedCount ?? 0}`} shortlisted candidates, and
-            {` ${analytics?.interviewsScheduled ?? 0}`} interviews scheduled.
+            {` ${analytics?.interviewScheduledCount ?? 0}`} interviews scheduled.
           </p>
 
           <Link

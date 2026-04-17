@@ -24,31 +24,59 @@ const SubscriptionPage = () => {
 
     try {
       setLoading(true);
-      
-      // Fetch current subscription
-      const subResponse = await subscriptionService.getCurrentPlan(user.userId);
-      if (subResponse.data) {
-        setCurrentSubscription(subResponse.data);
+      setError(null);
+
+      // Current subscription
+      try {
+        const subResponse = await subscriptionService.getCurrentPlan(user.userId);
+
+        // No active subscription yet
+        if (
+          subResponse.status === 204 ||
+          !subResponse.data ||
+          Object.keys(subResponse.data).length === 0
+        ) {
+          setCurrentSubscription(null);
+        } else {
+          setCurrentSubscription(subResponse.data);
+        }
+      } catch (subError) {
+        // 204 / 404 / no subscription should not break page
+        if (
+          subError.response?.status === 204 ||
+          subError.response?.status === 404
+        ) {
+          setCurrentSubscription(null);
+        } else {
+          throw subError;
+        }
       }
 
-      // Fetch invoices
+      // Invoices
       try {
         const invResponse = await subscriptionService.getInvoices(user.userId);
-        if (invResponse.data) {
-          setInvoices(invResponse.data.slice(0, 5)); // Show last 5 invoices
+
+        if (invResponse.data && Array.isArray(invResponse.data)) {
+          setInvoices(invResponse.data.slice(0, 5));
+        } else {
+          setInvoices([]);
         }
       } catch (invError) {
         console.log('No invoices found');
         setInvoices([]);
       }
+
     } catch (err) {
       console.error('Error fetching subscription:', err);
-      setError('Failed to load subscription data');
+
+      // Only show banner for real server issues, not "no subscription yet"
+      if (err.response?.status !== 204 && err.response?.status !== 404) {
+        setError('Failed to load subscription data');
+      }
     } finally {
       setLoading(false);
     }
-  };
-
+  };  
   const getPlanConfig = (planName) => {
     const upperPlan = planName?.toUpperCase();
     if (upperPlan === 'FREE') return SUBSCRIPTION_PLANS.FREE;
