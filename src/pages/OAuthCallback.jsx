@@ -40,7 +40,6 @@ const OAuthCallback = () => {
       // No token found, redirect to login
       navigate('/login')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

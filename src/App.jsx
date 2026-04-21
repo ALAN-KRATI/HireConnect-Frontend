@@ -35,17 +35,14 @@ import PublicRoute from './components/PublicRoute'
 function DynamicNavbar() {
   const location = useLocation()
   const { user } = useAuth()
-  
-  // Check if we're on a recruiter route
+
   const isRecruiterRoute = location.pathname.startsWith('/recruiter')
   const isRecruiter = user?.role === 'RECRUITER'
   
-  // Show RecruiterNavbar for recruiter routes OR when user is a recruiter
   if (isRecruiterRoute || isRecruiter) {
     return <RecruiterNavbar />
   }
   
-  // Show generic Navbar for all other routes (landing page, public pages, candidate routes)
   return <Navbar />
 }
 
@@ -56,7 +53,7 @@ function App() {
         <div className="min-h-screen bg-gray-50">
           <DynamicNavbar />
           <Routes>
-            {/* Public Routes */}
+        
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={
               <PublicRoute>

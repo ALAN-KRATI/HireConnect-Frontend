@@ -42,10 +42,6 @@ api.interceptors.response.use(
     
     switch (status) {
       case HTTP_STATUS.UNAUTHORIZED: {
-        // Only wipe credentials when the /auth/* endpoints themselves reject
-        // the token. A 401 from any other service (e.g. Eureka registration
-        // lag right after login) must NOT log the user out and kick them
-        // back to /login.
         const url = error.config?.url || ''
         if (url.includes('/auth/')) {
           localStorage.removeItem('token')

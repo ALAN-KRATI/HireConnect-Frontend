@@ -30,11 +30,9 @@ export const AuthProvider = ({ children }) => {
               userId: response.data.userId
             })
           } else {
-            // Token invalid but got response
             localStorage.removeItem('token')
           }
         } catch (error) {
-          // Token validation failed - silently remove it
           console.log('Token validation failed, clearing stored token')
           localStorage.removeItem('token')
         }
@@ -92,7 +90,5 @@ export const AuthProvider = ({ children }) => {
     isAdmin: user?.role === 'ADMIN'
   }
 
-  // DON'T BLOCK RENDERING - Let pages load immediately
-  // Token validation happens in background
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

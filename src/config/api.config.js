@@ -1,17 +1,10 @@
-/**
- * HireConnect API Configuration
- * Central source of truth for all backend API endpoints
- * Base URL: http://localhost:8080 (API Gateway)
- */
-
-// SIMPLE: Talk directly to backend
 export const API_CONFIG = {
   BASE_URL: 'http://localhost:8080',
   TIMEOUT: 10000,
   VERSION: 'v1'
 }
 
-// SIMPLE: Direct endpoints (backend routes)
+
 export const ENDPOINTS = {
   // Auth Service
   AUTH: {

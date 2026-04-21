@@ -19,16 +19,13 @@ const JobSearch = () => {
     console.log('JobSearch component mounted')
     console.log('Current searchParams:', searchParams.toString())
     fetchJobs()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Auto-apply filters when they change
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       applyFilters()
-    }, 300) // Debounce for 300ms
+    }, 300) 
     return () => clearTimeout(timeoutId)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filters])
 
   const fetchJobs = async () => {

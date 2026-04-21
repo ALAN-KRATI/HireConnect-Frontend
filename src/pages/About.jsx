@@ -91,24 +91,9 @@ const About = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
           <div className="grid md:grid-cols-4 gap-8">
             <TeamMember
-              name="Alex Johnson"
-              role="CEO & Founder"
-              description="Visionary leader with 15+ years in tech recruitment"
-            />
-            <TeamMember
-              name="Sarah Chen"
-              role="CTO"
-              description="Tech expert driving platform innovation"
-            />
-            <TeamMember
-              name="Michael Ross"
-              role="Head of Operations"
-              description="Ensuring smooth operations and customer satisfaction"
-            />
-            <TeamMember
-              name="Emily Davis"
-              role="Head of Customer Success"
-              description="Dedicated to helping users achieve their goals"
+              name="Alankrati Saxena"
+              role="Developer"
+              description="Passionate about creating innovative solutions that make a difference."
             />
           </div>
         </div>
