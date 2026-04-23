@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { jobService, applicationService, analyticsService, subscriptionService } from '../../services/api'
+import {
+  jobService,
+  applicationService,
+  analyticsService,
+  subscriptionService,
+  profileService
+} from '../../services/api'
 
 const RecruiterDashboard = () => {
   const { user } = useAuth()
@@ -452,19 +458,48 @@ const RecruiterDashboard = () => {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation()
 
-                              if (!app.resumeUrl) {
-                                alert('This candidate has not uploaded a resume yet.')
-                                return
+                              try {
+                                let resumePath =
+                                  app.resumeUrl ||
+                                  app.resume ||
+                                  app.resumePath ||
+                                  app.resumeFileUrl ||
+                                  null
+
+                                if (!resumePath && app.candidateId) {
+                                  const profileResponse = await profileService.getCandidateProfile(
+                                    app.candidateId
+                                  )
+
+                                  const profile = profileResponse.data || {}
+
+                                  resumePath =
+                                    profile.resumeUrl ||
+                                    profile.resume ||
+                                    profile.resumePath ||
+                                    profile.resumeFileUrl ||
+                                    null
+                                }
+
+                                if (!resumePath) {
+                                  alert('This candidate has not uploaded a resume yet.')
+                                  return
+                                }
+
+                                const resumeUrl = resumePath.startsWith('http')
+                                  ? resumePath
+                                  : `http://localhost:8080${
+                                      resumePath.startsWith('/') ? '' : '/'
+                                    }${resumePath}`
+
+                                window.open(resumeUrl, '_blank')
+                              } catch (error) {
+                                console.error('Error opening resume:', error)
+                                alert('Unable to open resume. Please check whether the resume path is being returned from the backend.')
                               }
-
-                              const resumeUrl = app.resumeUrl.startsWith('http')
-                                ? app.resumeUrl
-                                : `http://localhost:8080${app.resumeUrl}`
-
-                              window.open(resumeUrl, '_blank')
                             }}
                             className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                           >
