@@ -1,22 +1,43 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useFormValidation } from '../hooks/useFormValidation'
+import { validationSchemas } from '../utils/validation'
+import { FormField, ValidatedInput, ErrorMessage } from '../components/common/FormComponents'
 
 const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { login } = useAuth()
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  const {
+    errors,
+    touched,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    setFieldError
+  } = useFormValidation(validationSchemas.login)
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    handleChange(name, value, { ...formData, [name]: value })
+  }
+
+  const handleInputBlur = (e) => {
+    const { name, value } = e.target
+    handleBlur(name, value, formData)
+  }
+
+  const onSubmit = async (data) => {
+    setLoading(true)
     try {
-      const { role } = await login(email, password)
+      const { role } = await login(data.email, data.password)
       if (role === 'CANDIDATE') {
         navigate('/candidate/dashboard')
       } else if (role === 'RECRUITER') {
@@ -25,10 +46,15 @@ const Login = () => {
         navigate('/')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.')
-    } finally {
-      setLoading(false)
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.'
+      setFieldError('general', errorMessage)
+      throw err // Re-throw to be handled by the hook
     }
+  }
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault()
+    await handleSubmit(formData, onSubmit)
   }
 
   const handleGitHubLogin = () => {
@@ -44,13 +70,9 @@ const Login = () => {
           <h2 className="mt-6 text-3xl font-bold text-gray-900">Welcome Back</h2>
           <p className="mt-2 text-gray-600">Sign in to access your HireConnect account.</p>
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          <ErrorMessage error={errors.general} />
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <form onSubmit={handleFormSubmit} className="mt-8 space-y-6">
             <div className="flex items-center justify-center">
               <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,44 +82,58 @@ const Login = () => {
               </span>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FormField
+              label="Email Address"
+              error={touched.email && errors.email}
+              required
+            >
+              <ValidatedInput
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                error={touched.email && errors.email}
+                placeholder="you@example.com"
+                icon={
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                   </svg>
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
+                }
+              />
+            </FormField>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FormField
+              label="Password"
+              error={touched.password && errors.password}
+              required
+            >
+              <ValidatedInput
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                error={touched.password && errors.password}
+                placeholder="Enter your password"
+                icon={
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                </div>
-                <input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                }
+              />
+            </FormField>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your password"
                 />

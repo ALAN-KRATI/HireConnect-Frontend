@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { jobService } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
+import { useFormValidation } from '../../hooks/useFormValidation'
+import { validationSchemas } from '../../utils/validation'
+import { FormField, ValidatedInput, ValidatedTextarea, ValidatedSelect, ErrorMessage } from '../../components/common/FormComponents'
 
 const CreateJob = () => {
   const navigate = useNavigate()
@@ -23,14 +26,26 @@ const CreateJob = () => {
     deadline: ''
   })
   const [skillInput, setSkillInput] = useState('')
-  const [errors, setErrors] = useState({})
 
-  const handleChange = (e) => {
+  const {
+    errors,
+    touched,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    setFieldError,
+    resetValidation
+  } = useFormValidation(validationSchemas.createJob)
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' })
-    }
+    setFormData(prev => ({ ...prev, [name]: value }))
+    handleChange(name, value, { ...formData, [name]: value })
+  }
+
+  const handleInputBlur = (e) => {
+    const { name, value } = e.target
+    handleBlur(name, value, formData)
   }
 
   const addSkill = () => {
@@ -71,24 +86,33 @@ const CreateJob = () => {
   }
 
   const validateStep = () => {
-    const newErrors = {}
+    let stepFields = []
+
     if (step === 1) {
-      if (!formData.title.trim()) newErrors.title = 'Job title is required'
-      if (!formData.description.trim()) newErrors.description = 'Description is required'
-      if (!formData.category) newErrors.category = 'Category is required'
+      stepFields = ['title', 'description', 'category']
     } else if (step === 2) {
-      if (!formData.location.trim()) newErrors.location = 'Location is required'
-      if (!formData.experienceRequired) newErrors.experienceRequired = 'Experience is required'
-      if (!formData.minSalary) newErrors.minSalary = 'Minimum salary is required'
-      if (!formData.maxSalary) newErrors.maxSalary = 'Maximum salary is required'
-      if (Number(formData.minSalary) >= Number(formData.maxSalary)) {
-        newErrors.maxSalary = 'Maximum salary must be greater than minimum'
-      }
+      stepFields = ['location', 'experienceRequired', 'minSalary', 'maxSalary']
     } else if (step === 3) {
-      if (formData.skills.length === 0) newErrors.skills = 'At least one skill is required'
+      stepFields = ['skills']
     }
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+
+    // Validate only the fields for this step
+    let hasErrors = false
+    stepFields.forEach(field => {
+      const fieldValidators = validationSchemas.createJob[field]
+      if (!fieldValidators) return
+
+      for (const validator of fieldValidators) {
+        const error = validator(formData[field], formData)
+        if (error) {
+          setFieldError(field, error)
+          hasErrors = true
+          break
+        }
+      }
+    })
+
+    return !hasErrors
   }
 
   const handleNext = () => {
@@ -101,29 +125,30 @@ const CreateJob = () => {
     setStep(step - 1)
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!validateStep()) return
-
+  const onSubmit = async (data) => {
     setLoading(true)
     try {
       const jobData = {
-        ...formData,
-        experienceRequired: Number(formData.experienceRequired),
-        minSalary: Number(formData.minSalary),
-        maxSalary: Number(formData.maxSalary),
-        requirements: formData.requirements.filter(r => r.trim()),
+        ...data,
+        experienceRequired: Number(data.experienceRequired),
+        minSalary: Number(data.minSalary),
+        maxSalary: Number(data.maxSalary),
+        requirements: data.requirements.filter(r => r.trim()),
         postedBy: user?.userId
       }
       await jobService.createJob(jobData)
       alert('Job posted successfully!')
       navigate('/recruiter/jobs')
-    } catch (error) {
-      console.error('Error creating job:', error)
-      alert('Failed to create job. Please try again.')
-    } finally {
-      setLoading(false)
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Failed to create job. Please try again.'
+      setFieldError('general', errorMessage)
+      throw err // Re-throw to be handled by the hook
     }
+  }
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault()
+    await handleSubmit(formData, onSubmit)
   }
 
   const categories = [
@@ -212,67 +237,72 @@ const CreateJob = () => {
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Basic Information</h2>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
-                  <input
+                <FormField
+                  label="Job Title"
+                  error={touched.title && errors.title}
+                  required
+                >
+                  <ValidatedInput
                     type="text"
                     name="title"
                     value={formData.title}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    error={touched.title && errors.title}
                     placeholder="e.g., Senior Java Developer"
-                    className={`w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.title ? 'border-red-500' : 'border-gray-300'
-                    }`}
                   />
-                  {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-                </div>
+                </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Category *</label>
-                  <select
+                <FormField
+                  label="Job Category"
+                  error={touched.category && errors.category}
+                  required
+                >
+                  <ValidatedSelect
                     name="category"
                     value={formData.category}
-                    onChange={handleChange}
-                    className={`w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.category ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    error={touched.category && errors.category}
                   >
                     <option value="">Select Category</option>
                     {categories.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
-                  </select>
-                  {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
-                </div>
+                  </ValidatedSelect>
+                </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
-                  <select
+                <FormField
+                  label="Job Type"
+                  required
+                >
+                  <ValidatedSelect
                     name="type"
                     value={formData.type}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={handleInputChange}
                   >
                     {jobTypes.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
-                  </select>
-                </div>
+                  </ValidatedSelect>
+                </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
-                  <textarea
+                <FormField
+                  label="Job Description"
+                  error={touched.description && errors.description}
+                  required
+                  helpText="Describe the role, responsibilities, and requirements (minimum 20 characters)"
+                >
+                  <ValidatedTextarea
                     name="description"
                     value={formData.description}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    error={touched.description && errors.description}
                     rows={6}
                     placeholder="Describe the role, responsibilities, and what you're looking for..."
-                    className={`w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.description ? 'border-red-500' : 'border-gray-300'
-                    }`}
                   />
-                  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-                </div>
+                </FormField>
               </div>
             )}
 
@@ -281,86 +311,93 @@ const CreateJob = () => {
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Job Details</h2>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-                  <input
+                <FormField
+                  label="Location"
+                  error={touched.location && errors.location}
+                  required
+                >
+                  <ValidatedInput
                     type="text"
                     name="location"
                     value={formData.location}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    error={touched.location && errors.location}
                     placeholder="e.g., Bangalore, Mumbai, Remote"
-                    className={`w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.location ? 'border-red-500' : 'border-gray-300'
-                    }`}
                   />
-                  {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-                </div>
+                </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Experience Required *</label>
-                  <select
+                <FormField
+                  label="Experience Required"
+                  error={touched.experienceRequired && errors.experienceRequired}
+                  required
+                >
+                  <ValidatedSelect
                     name="experienceRequired"
                     value={formData.experienceRequired}
-                    onChange={handleChange}
-                    className={`w-full border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.experienceRequired ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    error={touched.experienceRequired && errors.experienceRequired}
                   >
                     <option value="">Select Experience</option>
                     {experienceOptions.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
-                  </select>
-                  {errors.experienceRequired && <p className="text-red-500 text-sm mt-1">{errors.experienceRequired}</p>}
-                </div>
+                  </ValidatedSelect>
+                </FormField>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Salary (Annual) *</label>
+                  <FormField
+                    label="Minimum Salary (Annual)"
+                    error={touched.minSalary && errors.minSalary}
+                    required
+                  >
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">₹</span>
-                      <input
+                      <ValidatedInput
                         type="number"
                         name="minSalary"
                         value={formData.minSalary}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        error={touched.minSalary && errors.minSalary}
+                        className="pl-8"
                         placeholder="500000"
-                        className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.minSalary ? 'border-red-500' : 'border-gray-300'
-                        }`}
                       />
                     </div>
-                    {errors.minSalary && <p className="text-red-500 text-sm mt-1">{errors.minSalary}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Maximum Salary (Annual) *</label>
+                  </FormField>
+
+                  <FormField
+                    label="Maximum Salary (Annual)"
+                    error={touched.maxSalary && errors.maxSalary}
+                    required
+                  >
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">₹</span>
-                      <input
+                      <ValidatedInput
                         type="number"
                         name="maxSalary"
                         value={formData.maxSalary}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        error={touched.maxSalary && errors.maxSalary}
+                        className="pl-8"
                         placeholder="1500000"
-                        className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.maxSalary ? 'border-red-500' : 'border-gray-300'
-                        }`}
                       />
                     </div>
-                    {errors.maxSalary && <p className="text-red-500 text-sm mt-1">{errors.maxSalary}</p>}
-                  </div>
+                  </FormField>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Application Deadline</label>
-                  <input
+                <FormField
+                  label="Application Deadline"
+                >
+                  <ValidatedInput
                     type="date"
                     name="deadline"
                     value={formData.deadline}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={handleInputChange}
                   />
-                </div>
+                </FormField>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
@@ -403,18 +440,20 @@ const CreateJob = () => {
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Required Skills</h2>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Add Skills *</label>
+                <FormField
+                  label="Add Skills"
+                  error={touched.skills && errors.skills}
+                  required
+                >
                   <div className="flex gap-2">
-                    <input
+                    <ValidatedInput
                       type="text"
                       value={skillInput}
                       onChange={(e) => setSkillInput(e.target.value)}
                       onKeyDown={handleSkillKeyDown}
+                      error={touched.skills && errors.skills}
                       placeholder="e.g., Java, Python, React"
-                      className={`flex-1 border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.skills ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className="flex-1"
                     />
                     <button
                       type="button"
@@ -424,9 +463,8 @@ const CreateJob = () => {
                       Add
                     </button>
                   </div>
-                  {errors.skills && <p className="text-red-500 text-sm mt-1">{errors.skills}</p>}
                   <p className="text-gray-500 text-sm mt-1">Press Enter or click Add to add a skill</p>
-                </div>
+                </FormField>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Selected Skills</label>

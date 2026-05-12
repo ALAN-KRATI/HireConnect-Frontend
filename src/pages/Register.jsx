@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useFormValidation } from '../hooks/useFormValidation'
+import { validationSchemas } from '../utils/validation'
+import { FormField, ValidatedInput, ValidatedSelect, ErrorMessage } from '../components/common/FormComponents'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,49 +14,45 @@ const Register = () => {
     role: 'CANDIDATE',
     fullName: ''
   })
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { register } = useAuth()
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const {
+    errors,
+    touched,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    setFieldError
+  } = useFormValidation(validationSchemas.register)
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    handleChange(name, value, { ...formData, [name]: value })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+  const handleInputBlur = (e) => {
+    const { name, value } = e.target
+    handleBlur(name, value, formData)
+  }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters')
-      return
-    }
-
-    if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
-      setError('Mobile number must be a valid 10-digit Indian number starting with 6-9')
-      return
-    }
-
-    if (!formData.fullName || formData.fullName.trim().length < 2) {
-      setError('Full name is required')
-      return
-    }
-
+  const onSubmit = async (data) => {
     setLoading(true)
-
     try {
-      await register(formData)
+      await register(data)
       navigate('/login?registered=true')
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
-    } finally {
-      setLoading(false)
+      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.'
+      setFieldError('general', errorMessage)
+      throw err // Re-throw to be handled by the hook
     }
+  }
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault()
+    await handleSubmit(formData, onSubmit)
   }
 
   const handleGitHubLogin = () => {
@@ -69,128 +68,123 @@ const Register = () => {
           <h2 className="mt-4 text-3xl font-bold text-gray-900">Create Your Account</h2>
           <p className="mt-2 text-gray-600">Join HireConnect and start your journey today.</p>
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          <ErrorMessage error={errors.general} />
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleFormSubmit} className="mt-6 space-y-4">
             {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
+            <FormField
+              label="Full Name"
+              error={touched.fullName && errors.fullName}
+              required
+            >
+              <ValidatedInput
                 id="fullName"
                 name="fullName"
                 type="text"
-                required
                 value={formData.fullName}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                error={touched.fullName && errors.fullName}
                 placeholder="John Doe"
               />
-            </div>
+            </FormField>
 
             {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FormField
+              label="Email Address"
+              error={touched.email && errors.email}
+              required
+            >
+              <ValidatedInput
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                error={touched.email && errors.email}
+                placeholder="you@example.com"
+                icon={
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
+                }
+              />
+            </FormField>
 
             {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FormField
+              label="Password"
+              error={touched.password && errors.password}
+              required
+              helpText="Must contain uppercase, lowercase, number, and special character"
+            >
+              <ValidatedInput
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                error={touched.password && errors.password}
+                placeholder="Create a strong password (min 8 chars)"
+                icon={
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  title="At least 8 characters"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Create a strong password (min 8 chars)"
-                />
-              </div>
-            </div>
+                }
+              />
+            </FormField>
 
             {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
-              </label>
-              <input
+            <FormField
+              label="Confirm Password"
+              error={touched.confirmPassword && errors.confirmPassword}
+              required
+            >
+              <ValidatedInput
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                required
                 value={formData.confirmPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                error={touched.confirmPassword && errors.confirmPassword}
                 placeholder="Confirm your password"
               />
-            </div>
+            </FormField>
 
             {/* Mobile */}
-            <div>
-              <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">
-                Mobile Number
-              </label>
-              <div className="mt-1 relative">
+            <FormField
+              label="Mobile Number"
+              error={touched.mobile && errors.mobile}
+              required
+            >
+              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <span className="text-gray-500 text-sm font-medium">+91</span>
                 </div>
-                <input
+                <ValidatedInput
                   id="mobile"
                   name="mobile"
                   type="tel"
-                  required
-                  pattern="[6-9][0-9]{9}"
-                  maxLength={10}
-                  inputMode="numeric"
-                  title="10-digit Indian mobile number starting with 6-9"
                   value={formData.mobile}
-                  onChange={handleChange}
-                  className="block w-full pl-20 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  error={touched.mobile && errors.mobile}
+                  className="pl-20"
                   placeholder="9876543210"
+                  maxLength={10}
                 />
               </div>
-            </div>
+            </FormField>
 
             {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Role
-              </label>
+            <FormField
+              label="Select Role"
+              error={touched.role && errors.role}
+              required
+            >
               <div className="grid grid-cols-2 gap-4">
                 <label
                   className={`cursor-pointer border-2 rounded-lg p-4 flex flex-col items-center transition-all ${
@@ -204,7 +198,7 @@ const Register = () => {
                     name="role"
                     value="CANDIDATE"
                     checked={formData.role === 'CANDIDATE'}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className="sr-only"
                   />
                   <svg className="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +220,7 @@ const Register = () => {
                     name="role"
                     value="RECRUITER"
                     checked={formData.role === 'RECRUITER'}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     className="sr-only"
                   />
                   <svg className="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +230,7 @@ const Register = () => {
                   <span className="text-xs text-gray-500 text-center mt-1">Post jobs and hire talent</span>
                 </label>
               </div>
-            </div>
+            </FormField>
 
             <button
               type="submit"
