@@ -119,13 +119,35 @@ const ManageApplications = () => {
         applicationId: selectedApplication.applicationId,
         candidateId: selectedApplication.candidateId,
         recruiterId: selectedApplication.recruiterId,
-        scheduledAt: new Date(interviewForm.scheduledAt).toISOString(),
+
+        candidateEmail:
+          selectedApplication.candidateEmail ||
+          selectedApplication.email ||
+          selectedApplication.candidate?.email ||
+          '',
+
+        jobId: selectedApplication.jobId,
+
+        jobTitle:
+          selectedApplication.jobTitle ||
+          selectedApplication.title ||
+          selectedApplication.job?.title ||
+          'Interview',
+
+        scheduledAt: interviewForm.scheduledAt,
         mode: interviewForm.mode,
+
         meetLink:
-          interviewForm.mode === 'ONLINE' ? interviewForm.meetLink : null,
+          interviewForm.mode === 'ONLINE'
+            ? interviewForm.meetLink || 'Meeting link will be shared later'
+            : null,
+
         location:
-          interviewForm.mode === 'IN_PERSON' ? interviewForm.location : null,
-        notes: interviewForm.notes
+          interviewForm.mode === 'IN_PERSON'
+            ? interviewForm.location || 'Office location will be shared later'
+            : null,
+
+        notes: interviewForm.notes || 'No additional notes'
       }
 
       await interviewService.scheduleInterview(interviewData)
@@ -294,11 +316,11 @@ const ManageApplications = () => {
                         </button>
 
                         <button
-                            onClick={() => handleRejectAfterInterview(app.applicationId)}
-                            className="px-3 py-1 text-sm rounded border border-red-600 text-red-600 hover:bg-red-50"
-                          >
-                            Reject
-                          </button>
+                          onClick={() => handleRejectAfterInterview(app.applicationId)}
+                          className="px-3 py-1 text-sm rounded border border-red-600 text-red-600 hover:bg-red-50"
+                        >
+                          Reject
+                        </button>
                       </>
                     )}
 
@@ -343,8 +365,141 @@ const ManageApplications = () => {
 
         {showInterviewModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
-              {/* keep your existing modal exactly as it is */}
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Schedule Interview
+                </h2>
+
+                <button
+                  type="button"
+                  onClick={() => setShowInterviewModal(false)}
+                  className="text-gray-500 hover:text-gray-800 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleScheduleInterview} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Interview Date & Time
+                  </label>
+
+                  <input
+                    type="datetime-local"
+                    value={interviewForm.scheduledAt}
+                    onChange={(e) =>
+                      setInterviewForm({
+                        ...interviewForm,
+                        scheduledAt: e.target.value
+                      })
+                    }
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Interview Mode
+                  </label>
+
+                  <select
+                    value={interviewForm.mode}
+                    onChange={(e) =>
+                      setInterviewForm({
+                        ...interviewForm,
+                        mode: e.target.value
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="ONLINE">Online</option>
+                    <option value="IN_PERSON">In Person</option>
+                  </select>
+                </div>
+
+                {interviewForm.mode === 'ONLINE' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Meet Link
+                    </label>
+
+                    <input
+                      type="url"
+                      value={interviewForm.meetLink}
+                      onChange={(e) =>
+                        setInterviewForm({
+                          ...interviewForm,
+                          meetLink: e.target.value
+                        })
+                      }
+                      placeholder="https://meet.google.com/..."
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                )}
+
+                {interviewForm.mode === 'IN_PERSON' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location
+                    </label>
+
+                    <input
+                      type="text"
+                      value={interviewForm.location}
+                      onChange={(e) =>
+                        setInterviewForm({
+                          ...interviewForm,
+                          location: e.target.value
+                        })
+                      }
+                      placeholder="Office address"
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
+
+                  <textarea
+                    value={interviewForm.notes}
+                    onChange={(e) =>
+                      setInterviewForm({
+                        ...interviewForm,
+                        notes: e.target.value
+                      })
+                    }
+                    rows="3"
+                    placeholder="Any extra details..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowInterviewModal(false)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
+                  >
+                    Schedule Interview
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
